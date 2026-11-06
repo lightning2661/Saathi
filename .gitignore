@@ -1,0 +1,16 @@
+node_modules/
+.next/
+out/
+.env
+.env.local
+.env*.local
+.data/
+*.log
+.DS_Store
+next-env.d.ts
+tsconfig.tsbuildinfo
+outputs/
+lora-out/
+__pycache__/
+.venv/
+.freebuff/
