@@ -1,0 +1,14 @@
+# Free Colab T4 (16 GB). Pinned because SFTTrainer's keyword surface churned
+# hard between trl 0.12 and 0.20 — `max_length` vs `max_seq_length`,
+# `processing_class` vs `tokenizer`, `eval_strategy` vs `evaluation_strategy`.
+# scripts/train_lora.py inspects the installed signatures and adapts, but a
+# pinned set keeps the run reproducible.
+transformers==4.46.3
+peft==0.13.2
+trl==0.13.0
+datasets==3.2.0
+accelerate==1.2.1
+bitsandbytes==0.45.0
+
+# If pip reports a torch conflict on a newer Colab image, drop the pins and
+# reinstall without them; the scripts adapt to the installed versions.
