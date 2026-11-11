@@ -9,7 +9,7 @@ export const TOPICS: Topic[] = [...CRISIS_TOPICS, ...ACCESS_TOPICS, ...RIGHTS_TO
 export const CORPUS_AS_ON = '2026-11-11';
 
 /** Bump when corpus content changes so the seeder re-runs on boot. */
-export const CORPUS_VERSION = '2026.11.11-1';
+export const CORPUS_VERSION = '2026.11.11-2';
 
 export function topicBySlug(slug: string): Topic | undefined {
   return TOPICS.find((t) => t.slug === slug);
