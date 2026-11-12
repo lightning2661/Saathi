@@ -1,4 +1,7 @@
 import { corpus } from '@/lib/data';
+import { FAQ } from '@/lib/faq';
+import { Reveal } from '@/components/Reveal';
+import { LiveUpdates } from '@/components/LiveUpdates';
 
 export const dynamic = 'force-dynamic';
 
@@ -9,177 +12,191 @@ const TIMELINE = [
   { year: '2019', title: 'Transgender Persons Act', body: 'Parliament creates a statutory right against discrimination, a right of residence and criminal penalties.' },
   { year: '2021', title: 'Madras High Court guidelines', body: 'Police protection for a same-sex couple; conversion practices called professional misconduct.' },
   { year: '2023', title: 'Supriyo', body: 'The Court declines to recognise same-sex marriage and leaves the status to Parliament.' },
-  { year: '2026', title: 'Amendment Act in force, 25 May', body: 'A narrower definition, a medical board before the identity certificate, and new offences for forced identity and forced begging.' },
+  { year: '2026', title: 'Amendment in force, 25 May', body: 'A narrower definition, a medical board before the identity certificate, and new offences for forced identity and forced begging.' },
 ];
 
 export default async function HomePage() {
   const db = await corpus();
-  const stats = await db.first<{ provisions: number; topics: number; reviewed: number; acts: number }>(
-    `SELECT (SELECT COUNT(*) FROM provisions) AS provisions,
-            (SELECT COUNT(*) FROM topics) AS topics,
-            (SELECT COUNT(*) FROM provisions WHERE human_reviewed = 1) AS reviewed,
-            (SELECT COUNT(*) FROM acts) AS acts`,
-  );
+  const [stats, topics] = await Promise.all([
+    db.first<{ provisions: number; topics: number; reviewed: number; acts: number }>(
+      `SELECT (SELECT COUNT(*) FROM provisions) AS provisions,
+              (SELECT COUNT(*) FROM topics) AS topics,
+              (SELECT COUNT(*) FROM provisions WHERE human_reviewed = 1) AS reviewed,
+              (SELECT COUNT(*) FROM acts) AS acts`,
+    ),
+    db.all<{ slug: string; title: string; summary: string; urgency: number }>(
+      `SELECT slug, title_en AS title, summary_en AS summary, urgency
+         FROM topics ORDER BY urgency DESC, slug LIMIT 6`,
+    ),
+  ]);
+
+  const teasers = FAQ.slice(0, 5);
 
   return (
     <>
       <section className="hero">
         <div className="shell hero-grid">
           <div>
-            <div className="kicker">SDG 16 · Access to justice · India</div>
-            <h1 className="display">
-              Know your rights. <em>Know your next step.</em>
-            </h1>
+            <h1 className="display">The law already says you exist.</h1>
             <p className="lede">
-              Saathi is a privacy-first legal tool for transgender and LGBTQ+ people in India.
-              Describe your situation in your own words and get your rights in plain language, the
-              law with its source, and a verified person who can actually help.
+              Saathi reads what is happening, finds the section that protects you, and puts a free
+              legal aid lawyer&apos;s number in your hand. Nothing you type is stored, and no
+              account is needed.
             </p>
-            <div className="btn-row" style={{ marginTop: '1.6rem' }}>
+            <div className="btn-row hero-actions">
               <a className="btn btn--primary" href="/ask">
-                Describe your situation
+                Describe what happened
               </a>
-              <a className="btn" href="/rights">
-                Or just read your rights
+              <a className="btn" href="/laws">
+                Read the law first
               </a>
             </div>
-            <p style={{ marginTop: '1.3rem', fontSize: '0.84rem', color: 'var(--ink-3)' }}>
-              No account. No tracking. Nothing you type is stored.
+            <p className="fineprint">
+              {stats?.provisions ?? 0} provisions · {stats?.acts ?? 0} acts ·{' '}
+              {stats?.topics ?? 0} situations
+              <br />
+              checked against India Code · English, हिंदी, தமிழ் · corpus 12 Nov 2026
             </p>
           </div>
 
-          <div className="panel">
-            <div className="section-label">An answer looks like this</div>
-            <p style={{ fontSize: '0.95rem', color: 'var(--ink-2)', fontStyle: 'italic' }}>
+          <figure className="sheet">
+            <div className="sheet-head">
+              <span>case note · specimen</span>
+              <span>not stored</span>
+            </div>
+            <p className="sheet-quote">
               “My family threw me out because I&apos;m trans. I&apos;m 16 and I&apos;m at a railway
-              station. What can I do?”
+              station with no money.”
             </p>
-            <hr className="rule" style={{ margin: '1.2rem 0' }} />
-            <div className="section-label">Saathi notices</div>
-            <div className="chips" style={{ marginTop: 0, marginBottom: '1.1rem' }}>
-              <span className="badge badge--warn">You may be under 18</span>
-              <span className="badge badge--warn">No safe place tonight</span>
+            <dl style={{ margin: 0 }}>
+              <div className="sheet-row">
+                <dt>noticed</dt>
+                <dd>Under 18 · no safe place tonight</dd>
+              </div>
+              <div className="sheet-row">
+                <dt>do now</dt>
+                <dd>
+                  Call <a href="tel:1098">1098</a>. Ask station staff or the RPF to call with you.
+                  Do not take a room from a stranger tonight.
+                </dd>
+              </div>
+              <div className="sheet-row">
+                <dt>right</dt>
+                <dd>A child cannot be separated from family only for being transgender.</dd>
+              </div>
+              <div className="sheet-row">
+                <dt>source</dt>
+                <dd className="model-note">s.12 · TPA 2019 · checked 04 Jun 2026</dd>
+              </div>
+            </dl>
+            <div className="stamp" aria-hidden="true">
+              SOURCE
+              <br />
+              CHECKED
+              <br />
+              04 JUN 2026
             </div>
-            <div className="section-label">Immediate action</div>
-            <p style={{ fontSize: '0.93rem' }}>
-              Call <a href="tel:1098">1098</a>. Ask station staff or the Railway Protection Force to
-              help you reach them. Do not accept a room from a stranger tonight.
-            </p>
-            <div className="section-label" style={{ marginTop: '1.2rem' }}>
-              Your rights
-            </div>
-            <p style={{ fontSize: '0.93rem', marginBottom: '0.4rem' }}>
-              A child cannot be separated from family only for being transgender.
-            </p>
-            <span className="cite">§12 · TPA 2019 · 2026-06-04</span>
-            <div className="section-label" style={{ marginTop: '1.2rem' }}>
-              Who can help
-            </div>
-            <p style={{ fontSize: '0.93rem', margin: 0 }}>
-              1098 Childline · 15100 legal aid · 139 railway · 112 emergency
-            </p>
-          </div>
+          </figure>
         </div>
       </section>
 
       <section className="section">
         <div className="shell">
-          <div className="two-col">
-            <div>
-              <div className="section-label">The problem</div>
-              <h2>Rejected at home. Invisible to the system. Unheard by everyone.</h2>
-              <p className="lede" style={{ marginTop: '0.8rem' }}>
-                A 17-year-old is bullied out of school. At 18 she is abandoned at a railway station
-                with no documents. At 19 shops turn her away. Today she begs between stations, and a
-                passenger who wants to help has no idea what to do.
-              </p>
-              <p style={{ fontSize: '0.84rem', color: 'var(--ink-3)' }}>
-                Meera is a composite drawn from documented patterns, not a real person.
+          <Reveal>
+            <div className="section-label">Where it usually breaks</div>
+            <div className="two-col" style={{ marginBottom: '1.8rem' }}>
+              <h2>Sixteen situations, one for the thing nobody would name.</h2>
+              <p style={{ color: 'var(--ink-2)', marginBottom: 0 }}>
+                Each one is a playbook, not an article: what to do in the next hour, the provision
+                that applies, and who picks up the phone. Read it without telling us anything.
               </p>
             </div>
-            <div>
-              <ol className="story">
-                <li>
-                  <time>Age 17</time>
-                  <p>Bullied by classmates, ignored by teachers, stops going to school.</p>
-                </li>
-                <li>
-                  <time>Age 17</time>
-                  <p>Parents abandon her at a railway station.</p>
-                </li>
-                <li>
-                  <time>Age 18</time>
-                  <p>No documents, no identity, no route to a certificate she is entitled to.</p>
-                </li>
-                <li>
-                  <time>Age 19</time>
-                  <p>Shops turn her away. A man offers a room, then keeps her earnings.</p>
-                </li>
-                <li className="now">
-                  <time>Today</time>
-                  <p>She begs between stations. A passenger gives ₹20 and wants to do more.</p>
-                </li>
-              </ol>
-            </div>
-          </div>
-        </div>
-      </section>
+          </Reveal>
 
-      <section className="section">
-        <div className="shell">
-          <div className="section-label">What the data shows</div>
-          <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 200px), 1fr))' }}>
-            <div className="stat">
-              <b>4.88 lakh</b>
-              <span>transgender persons counted in Census 2011 — the first time India counted them. The real number is widely thought to be higher.</span>
-            </div>
-            <div className="stat">
-              <b>99%</b>
-              <span>faced social rejection on multiple occasions in an NHRC-commissioned national study.</span>
-            </div>
-            <div className="stat">
-              <b>59%</b>
-              <span>of transgender respondents in Delhi, Mumbai and Bengaluru had experienced violence.</span>
-            </div>
-            <div className="stat">
-              <b>52% / 15%</b>
-              <span>harassed in school by classmates / by teachers. Harassment pushes people out of school and out of future jobs.</span>
-            </div>
+          <div className="grid">
+            {topics.map((t, i) => (
+              <Reveal key={t.slug} delay={i * 45}>
+                <a className="card" href={`/rights/${t.slug}`}>
+                  <h3>{t.title}</h3>
+                  <p>{t.summary}</p>
+                  <div className="card-meta">
+                    <span>{t.urgency === 3 ? 'urgent' : 'information'}</span>
+                    <span>playbook</span>
+                  </div>
+                </a>
+              </Reveal>
+            ))}
           </div>
-          <p style={{ fontSize: '0.8rem', color: 'var(--ink-3)', marginTop: '1.4rem' }}>
-            Sources: Census of India 2011; NHRC / Kerala Development Society study; Humsafar Trust
-            needs assessment 2017–18.
-          </p>
+
+          <div className="btn-row" style={{ marginTop: '1.6rem' }}>
+            <a className="btn" href="/rights">
+              All situations
+            </a>
+            <a className="btn" href="/faq">
+              Short answers instead
+            </a>
+          </div>
         </div>
       </section>
 
       <section className="section">
         <div className="shell two-col">
-          <div>
-            <div className="section-label">How Saathi works</div>
-            <h2>Four steps, and the last one is a person.</h2>
-            <ol className="steps" style={{ marginTop: '1.4rem' }}>
-              <li data-kind="now">
-                <strong>Understand.</strong> Reads the situation in English, हिंदी or தமிழ். A fixed
-                rule set checks danger before anything else runs.
-              </li>
-              <li>
-                <strong>Retrieve.</strong> Pulls only verified law, playbooks and helplines. Every
-                rule arrives with its source and the date it was checked.
-              </li>
-              <li>
-                <strong>Respond.</strong> Writes a short plan: what to do now, your rights, who to
-                call. A model may rephrase, but may not add law.
-              </li>
-              <li>
-                <strong>Hand off.</strong> Every plan ends with free legal aid, a helpline or a
-                partner. Saathi never tries to be the last step.
-              </li>
-            </ol>
-          </div>
+          <Reveal>
+            <div className="section-label">How an answer is made</div>
+            <h2>A model may rephrase. It may not add law.</h2>
+            <p style={{ color: 'var(--ink-2)', marginTop: '0.9rem' }}>
+              Danger is checked first, by fixed rules — not by a model. Then the situation is matched
+              to provisions by keyword evidence. A language model can be asked to write the answer
+              more clearly, but every claim it makes must carry the index of a retrieved provision;
+              anything uncited is dropped before you see it.
+            </p>
+            <p style={{ color: 'var(--ink-2)' }}>
+              If nothing in the corpus answers you, Saathi says so and gives you a route to a human
+              instead of inventing a section. The law library is the entire surface it can cite.
+            </p>
+            <div className="dl" style={{ marginTop: '1.4rem' }}>
+              <dt>provisions</dt>
+              <dd>{stats?.provisions ?? 0} verified, each with a source URL</dd>
+              <dt>sign-off</dt>
+              <dd>
+                {stats?.reviewed ?? 0} of {stats?.provisions ?? 0} reviewed by a named lawyer — the
+                count is shown, not assumed
+              </dd>
+            </div>
+          </Reveal>
 
-          <div>
-            <div className="section-label">The law keeps moving</div>
+          <Reveal delay={80}>
+            <div className="section-label">The desk is live</div>
+            <p style={{ color: 'var(--ink-2)', marginTop: '-0.2rem', marginBottom: '1rem' }}>
+              Saathi polls the official portals and stages anything new for review. It never edits a
+              statute on its own.
+            </p>
+            <LiveUpdates />
+            <div className="grid grid--2" style={{ marginTop: '1rem', gap: '0.75rem' }}>
+              <div className="stat">
+                <b>{stats?.topics ?? 0}</b>
+                <span>situation playbooks across three languages</span>
+              </div>
+              <div className="stat">
+                <b>{FAQ.length}</b>
+                <span>plain answers to the questions people actually ask</span>
+              </div>
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
+      <section className="section">
+        <div className="shell two-col">
+          <Reveal>
+            <div className="section-label">How the law got here</div>
+            <h2>Seven moments that decide what a police officer owes you today.</h2>
+            <p style={{ color: 'var(--ink-2)', marginTop: '0.9rem' }}>
+              Statutory rights do not arrive in one day. Each of these changed what an institution
+              can lawfully do to you, and each is why a section in the library reads the way it does.
+            </p>
+          </Reveal>
+          <Reveal delay={60}>
             <ul className="timeline">
               {TIMELINE.map((t) => (
                 <li key={t.year + t.title}>
@@ -191,6 +208,42 @@ export default async function HomePage() {
                 </li>
               ))}
             </ul>
+          </Reveal>
+        </div>
+      </section>
+
+      <section className="section">
+        <div className="shell">
+          <Reveal>
+            <div className="section-label">Questions people ask at 2am</div>
+            <h2>Asked plainly. Answered the same way.</h2>
+          </Reveal>
+          <div style={{ marginTop: '1.2rem' }}>
+            {teasers.map((f, i) => (
+              <Reveal key={f.id} delay={i * 40}>
+                <div className="faq-item">
+                  <a
+                    href={`/faq#${f.id}`}
+                    style={{ display: 'block', padding: '1rem 0', textDecoration: 'none' }}
+                  >
+                    <span
+                      style={{
+                        fontFamily: 'var(--display)',
+                        fontSize: 'clamp(1.05rem, 1.8vw, 1.22rem)',
+                        color: 'var(--ink)',
+                      }}
+                    >
+                      {f.q}
+                    </span>
+                  </a>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+          <div className="btn-row" style={{ marginTop: '1.4rem' }}>
+            <a className="btn" href="/faq">
+              All {FAQ.length} questions
+            </a>
           </div>
         </div>
       </section>
@@ -211,8 +264,8 @@ export default async function HomePage() {
                   cannot be refused on ignorance.
                 </li>
                 <li>
-                  <strong>16.9</strong> — routes people without documents towards identity papers
-                  and certificates.
+                  <strong>16.9</strong> — routes people without documents towards identity papers and
+                  certificates.
                 </li>
                 <li>
                   <strong>16.b</strong> — records where the law is unclear or misapplied, with
@@ -221,29 +274,13 @@ export default async function HomePage() {
               </ul>
             </div>
             <div className="panel">
-              <div className="section-label">Corpus status</div>
-              <div className="kv">
-                <span>Provisions in force</span>
-                <span className="num">{stats?.provisions ?? 0}</span>
-              </div>
-              <div className="kv">
-                <span>Acts cited</span>
-                <span className="num">{stats?.acts ?? 0}</span>
-              </div>
-              <div className="kv">
-                <span>Situation playbooks</span>
-                <span className="num">{stats?.topics ?? 0}</span>
-              </div>
-              <div className="kv">
-                <span>Human legal sign-off</span>
-                <span className="num">
-                  {stats?.reviewed ?? 0} / {stats?.provisions ?? 0}
-                </span>
-              </div>
-              <p style={{ fontSize: '0.82rem', color: 'var(--ink-3)', marginTop: '1rem', marginBottom: 0 }}>
-                Text is checked against the India Code consolidated version and the Gazette. Partner
-                sign-off is tracked per provision and shown on every citation, not assumed.
-              </p>
+              <div className="section-label">What Saathi will never do</div>
+              <ul style={{ fontSize: '0.9rem', color: 'var(--ink-2)', marginBottom: 0 }}>
+                <li>Quote a section that is not in the library.</li>
+                <li>Store your question, or ask you to make an account.</li>
+                <li>Claim a provision has been reviewed by a lawyer when it has not.</li>
+                <li>Replace the last step, which is always a person.</li>
+              </ul>
             </div>
           </div>
 
@@ -253,9 +290,6 @@ export default async function HomePage() {
             </a>
             <a className="btn" href="/help">
               I want to help someone
-            </a>
-            <a className="btn" href="/laws">
-              Browse the law library
             </a>
           </div>
         </div>

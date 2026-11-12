@@ -16,6 +16,21 @@ const EXAMPLES: { lang: Lang; label: string; text: string }[] = [
     text: 'A landlord in Pune refused to rent me a room after he found out I am transgender. He said it would upset other tenants.',
   },
   {
+    lang: 'en',
+    label: 'Fired from work',
+    text: 'I was fired the week my manager found out I am transgender. They called it a performance issue but nothing was ever written down before.',
+  },
+  {
+    lang: 'en',
+    label: 'Police station',
+    text: 'I went to report a threat and the officer at the station laughed and told me to come back with my parents.',
+  },
+  {
+    lang: 'en',
+    label: 'Pictures shared',
+    text: 'Someone I met online is threatening to send my private pictures to my family unless I pay him.',
+  },
+  {
     lang: 'hi',
     label: 'नौकरी से निकाला',
     text: 'मैं ट्रांसजेंडर हूं। कंपनी ने मुझे बिना कारण नौकरी से निकाल दिया और वेतन भी नहीं दिया।',
@@ -50,14 +65,19 @@ const T = {
     hi: 'पहले एक-दो वाक्य लिखें।',
     ta: 'முதலில் ஒன்றிரண்டு வாக்கியங்கள் எழுதுங்கள்.',
   },
+  noModel: {
+    en: 'No language model is configured on this instance, so Saathi composes the answer from the corpus alone. Nothing you type leaves this server.',
+    hi: 'इस सर्वर पर कोई भाषा मॉडल सेट नहीं है, इसलिए साथी उत्तर केवल संग्रह से बनाता है। आपका लिखा कुछ भी बाहर नहीं जाता।',
+    ta: 'இந்த சேவையகத்தில் மொழி மாதிரி அமைக்கப்படவில்லை; எனவே சாதி தொகுப்பிலிருந்து மட்டுமே பதிலை உருவாக்கும். நீங்கள் எழுதுவது வெளியே செல்லாது.',
+  },
 } as const;
 
 const pick = (m: Record<Lang, string>, lang: Lang) => m[lang];
 
-export function AskClient() {
+export function AskClient({ modelAvailable }: { modelAvailable: boolean }) {
   const [text, setText] = useState('');
   const [lang, setLang] = useState<Lang>('en');
-  const [useModel, setUseModel] = useState(false);
+  const [useModel, setUseModel] = useState(modelAvailable);
   const [answer, setAnswer] = useState<Answer | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -145,9 +165,14 @@ export function AskClient() {
           <input
             type="checkbox"
             checked={useModel}
+            disabled={!modelAvailable}
             onChange={(e) => setUseModel(e.target.checked)}
           />
-          <span>{pick(T.consent, lang)}</span>
+          <span>
+            {modelAvailable
+              ? pick(T.consent, lang)
+              : pick(T.noModel, lang)}
+          </span>
         </label>
       </div>
 

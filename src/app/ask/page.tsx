@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { AskClient } from './AskClient';
+import { modelAvailable } from '@/lib/gateway';
 
 export const metadata: Metadata = {
   title: 'Describe your situation',
@@ -13,7 +14,7 @@ export default function AskPage() {
   return (
     <div className="shell">
       <header className="page-head">
-        <div className="kicker">Know your next step</div>
+        <div className="docket">one or two sentences · nothing stored · no account</div>
         <h1>Say what is happening.</h1>
         <p>
           One or two sentences is enough. Saathi reads it for danger first, then pulls only the
@@ -23,7 +24,7 @@ export default function AskPage() {
 
       <div className="two-col" style={{ paddingBottom: '3rem' }}>
         <div>
-          <AskClient />
+          <AskClient modelAvailable={modelAvailable()} />
         </div>
 
         <aside className="stack">

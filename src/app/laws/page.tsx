@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { listActs, listLaws } from '@/lib/data';
 import { sectionLabel } from '@/lib/format';
+import { LiveUpdates } from '@/components/LiveUpdates';
 
 export const metadata: Metadata = {
   title: 'Law library',
@@ -21,13 +22,21 @@ export default async function LawsPage({
   return (
     <div className="shell">
       <header className="page-head">
-        <div className="kicker">No model writes this page</div>
+        <div className="docket">no model writes this page · {provisions.length} rows shown</div>
         <h1>Law library</h1>
         <p>
           This is the whole citational surface of Saathi. If a provision is not here, Saathi will not
           state it. Each row links to the official source and records when it was last checked.
         </p>
       </header>
+
+      <div className="two-col" style={{ marginBottom: '2rem', alignItems: 'start' }}>
+        <LiveUpdates compact />
+        <p className="model-note" style={{ marginBottom: 0 }}>
+          The sync pipeline only detects. A new amendment is staged as a pending change and cannot be
+          cited until a person verifies the text against the official copy.
+        </p>
+      </div>
 
       <form className="btn-row" action="/laws" method="get" style={{ marginBottom: '2rem' }}>
         <input

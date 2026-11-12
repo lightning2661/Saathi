@@ -73,4 +73,10 @@ export const INDIACODE_QUERIES = [
   'Protection of Children from Sexual Offences',
   'Mental Healthcare Act',
   'Human Immunodeficiency Virus and Acquired Immune Deficiency Syndrome Prevention and Control Act',
+  'Rights of Persons with Disabilities Act',
+  'Protection of Human Rights Act',
+  'Legal Services Authorities Act',
+  'Code on Social Security',
+  'Bharatiya Nyaya Sanhita',
+  'Indian Penal Code',
 ];

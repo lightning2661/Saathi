@@ -5,6 +5,7 @@ import { PROVISIONS } from '../src/lib/corpus/provisions';
 import { HELPLINES } from '../src/lib/corpus/helplines';
 import { CASES } from '../src/lib/corpus/cases';
 import { ACTS } from '../src/lib/corpus/acts';
+import { FAQ, searchFaq, CATEGORY_LABEL } from '../src/lib/faq';
 
 const ids = <T extends { id: string }>(rows: T[]) => new Set(rows.map((r) => r.id));
 
@@ -59,6 +60,42 @@ test('provision metadata is complete', () => {
     assert.ok(p.summary.length > 30, `${p.id} has no plain-language summary`);
     assert.equal(typeof p.humanReviewed, 'boolean');
   }
+});
+
+test('the corpus covers the situations people actually bring', () => {
+  const slugs = new Set(TOPICS.map((t) => t.slug));
+  for (const slug of ['hiv-status', 'online-abuse', 'outing', 'banking', 'travel-id', 'detention', 'adoption', 'public-place']) {
+    assert.ok(slugs.has(slug), `missing situation: ${slug}`);
+  }
+  assert.ok(TOPICS.length >= 21, `only ${TOPICS.length} situations`);
+});
+
+test('extra situations still hand off to a helpline and cite a provision', () => {
+  const extra = TOPICS.filter((t) =>
+    ['hiv-status', 'online-abuse', 'outing', 'banking', 'travel-id', 'detention', 'adoption', 'public-place'].includes(t.slug),
+  );
+  assert.equal(extra.length, 8);
+  for (const t of extra) {
+    assert.ok(t.provisionIds.length > 0, `${t.slug} cites nothing`);
+    assert.ok(t.helplineIds.length > 0, `${t.slug} hands off to nobody`);
+  }
+});
+
+test('faq entries are unique, substantive and categorised', () => {
+  assert.ok(FAQ.length >= 24, `faq has only ${FAQ.length} entries`);
+  assert.equal(new Set(FAQ.map((f) => f.id)).size, FAQ.length, 'duplicate faq id');
+  for (const f of FAQ) {
+    assert.ok(f.q.length > 12, `${f.id} has a stub question`);
+    assert.ok(f.a.length > 40, `${f.id} has a stub answer`);
+    assert.ok(CATEGORY_LABEL[f.category], `${f.id} has an unknown category`);
+  }
+});
+
+test('faq search finds an answer by keyword and ignores filler', () => {
+  assert.ok(searchFaq(FAQ, 'landlord').length > 0);
+  assert.ok(searchFaq(FAQ, '1098').length > 0);
+  assert.equal(searchFaq(FAQ, 'zzzznothing').length, 0);
+  assert.equal(searchFaq(FAQ, 'a').length, FAQ.length, 'one-letter query should not filter');
 });
 
 test('crisis helplines exist and are dialable', () => {
